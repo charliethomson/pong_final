@@ -16,9 +16,9 @@ menu:
             y: 0.38
             w: 0.25
             h: 0.10
-            text: "Main Menu"
+            text: "Back"
             color: 110,110,110
-            function: "goto_mainmenu"
+            function: "go_back"
     sliders:
         1:
             x: 0.5

@@ -9,7 +9,7 @@ menu:
             h: 0.10
             text: "Resume Game"
             color: 110,110,110
-            function: "start_game"
+            function: "unpause_game"
         2:
             x: 0.5
             y: 0.62
@@ -29,6 +29,22 @@ menu:
         4:
             x: 0.5
             y: 0.38
+            w: 0.25
+            h: 0.10
+            text: "Options"
+            color: 110,110,110
+            function: "goto_options"
+        5:
+            x: 0.5
+            y: 0.26
+            w: 0.25
+            h: 0.10
+            text: "Main Menu"
+            color: 110,110,110
+            function: "goto_mainmenu"
+        6:
+            x: 0.5
+            y: 0.14
             w: 0.25
             h: 0.10
             text: "Exit Game"

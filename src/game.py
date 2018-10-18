@@ -32,6 +32,7 @@ class Game:
         self.is_running = False
         self.is_paused = False
         self.visible_menu = "main_menu"
+        self.last_menu = None
         self.menus = {}
         self.varsets = {
             "P1COLOR": self.player1.color,
@@ -46,6 +47,9 @@ class Game:
             "toggle_fullscreen": self.toggle_fullscreen,
             "goto_mainmenu": self.goto_mainmenu,
             "save_game": self.save_game,
+            "pause_game": self.pause_game,
+            "unpause_game": self.unpause_game,
+            "go_back": self.go_back,
             ###
             "load_game": self.load_game
         }
@@ -72,14 +76,15 @@ class Game:
         for filename in listdir("./menus"):
             with open("./menus/" + filename, "r") as file_:
                 yaml_data = load_yaml(file_)["menu"]
-                print("Yaml data for file %s" % filename)
+                print("\nYaml data for file %s" % filename)
                 pprint(yaml_data)
 
 
     def reset(self):
         self.puck.reset()
-        [player.reset() for player in self.players]
-        self.apply_settings()
+        for player in self.players:
+            player.reset()
+            player.score = 0
 
     def mouse_pressed(self, x, y, button, mod):
         if self.visible_menu:
@@ -94,7 +99,9 @@ class Game:
     def start_game(self):
         self.is_paused = False
         self.is_running = True
+        self.last_menu = self.visible_menu
         self.visible_menu = None
+        self.reset()
 
     def save_game(self):
         filename = "./saves/" + strftime("%d%m%Y-%H_%M_%S") + ".yaml"
@@ -163,23 +170,48 @@ class Game:
             self.puck.color = puck["color"]
         self.start_game()
 
+    def go_back(self):
+        self.visible_menu = self.last_menu
+
     def goto_mainmenu(self):
+        self.is_paused = False
         self.is_running = False
+        self.last_menu = self.visible_menu
         self.visible_menu = "main_menu"
 
     def goto_loadmenu(self):
         self.load_game()
 
     def goto_options(self):
+        self.is_paused = False
+        self.last_menu = self.visible_menu
         self.visible_menu = "options"
+    
 
-    def goto_pause(self):
+    def unpause_game(self):
+        self.is_running = True
+        self.is_paused = False
+        self.last_menu = self.visible_menu
+        self.visible_menu = None
+
+    def pause_game(self):
         self.is_running = False
         self.is_paused = True
+        self.last_menu = self.visible_menu
         self.visible_menu = "pause"
 
     def toggle_fullscreen(self):
+        file = open("./resources/temp.yaml", "w+"); file.close()
+        self.puck._temp_save_pos()
+        for player in self.players:
+            player._temp_save_pos()
+    
         self.window.set_fullscreen(not self.window.fullscreen)
+    
+        self.puck._load_pos_from_temp()
+        for player in self.players:
+            player._load_pos_from_temp()
+        file = open("./resources/temp.yaml", "w+"); file.close()
         self.load_menus()
 
     def exit_game(self):
@@ -188,11 +220,10 @@ class Game:
         exit()
 
     def mainloop(self, dt):
-        print(self.frame_counter.framecount)
         self.frame_counter.on_frame()
         self.window.clear()
         if self.is_running:
-            if self.keys[P]: self.goto_pause()
+            if self.keys[P]: self.pause_game()
             self.handle_motion()
             self.handle_collision()
             self.keep_in_bounds()
@@ -209,9 +240,13 @@ class Game:
                     if button.contains(self.mouse_position):
                         button.on_hover()
         if self.is_paused:
-            # if self.keys[P]: self.start_game()
+            # if self.keys[P]: self.unpause_game()
             self.puck.draw()
+            self.draw_scores()
             [player.draw() for player in self.players]
+        if self.visible_menu == "pause": self.is_paused = True
+        else: self.is_paused = False
+
 
     def handle_motion(self):
         if self.keys[W]:    self.player1.move( 10)

@@ -27,11 +27,11 @@ class MenuButton:
             text=self.text,
             x=self.pos.x,
             y=self.pos.y,
-            anchor_x="left",
-            anchor_y="baseline",
+            anchor_x=CENTER,
+            # anchor_y=CENTER,
             width=self.w,
             height=-self.h,
-            multiline=self.multiline,
+            font_size=25,
             font_name="helvetica"
         )
         self.label.draw()
@@ -49,7 +49,7 @@ class MenuButton:
             )
 
     def on_hover(self):
-        print(self.label.text)
+        # print(self.label.text)
         self.color = tuple([color + 25 for color in self.color])
 
     def on_click(self):
