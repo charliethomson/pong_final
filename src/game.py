@@ -98,15 +98,6 @@ class Game:
 
     def save_game(self):
         filename = "./saves/" + strftime("%d%m%Y-%H_%M_%S") + ".yaml"
-        game_saved_label = Label(
-            text="Game Saved.",
-            x=20,
-            y=self.window.height - 40,
-            font_size=32,
-            font_name="helvetica"
-            
-        )
-        self.frame_counter.for_frames(120, game_saved_label.draw)
         with open(filename, "w") as file_:
             file_.write(dump_yaml(
             {
