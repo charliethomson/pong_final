@@ -1,0 +1,37 @@
+
+menu:
+    name: "pause"
+    buttons:
+        1:
+            x: 0.5
+            y: 0.74
+            w: 0.25
+            h: 0.10
+            text: "Resume Game"
+            color: 110,110,110
+            function: "start_game"
+        2:
+            x: 0.5
+            y: 0.62
+            w: 0.25
+            h: 0.10
+            text: "Save Game"
+            color: 110,110,110
+            function: "save_game"
+        3:
+            x: 0.5
+            y: 0.5
+            w: 0.25
+            h: 0.10
+            text: "Load Game"
+            color: 110,110,110
+            function: "goto_loadmenu"
+        4:
+            x: 0.5
+            y: 0.38
+            w: 0.25
+            h: 0.10
+            text: "Exit Game"
+            color: 110,110,110
+            function: "exit_game"
+    sliders:
