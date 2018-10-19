@@ -1,0 +1,25 @@
+
+##########################################################
+# general:                                               #
+#     tiling of a simple texture for backgrounds/buttons #
+##########################################################
+
+settings saving:
+    game.commit_settings() saves the settings to the settings.yaml file, which'll store the settings for the game (colors, difficulty, fullscreeniness)
+
+game saving:
+    add a button to the pause menu that saves the game to an autoformatted yaml file in the "./saves" folder
+    save:
+        puck pos, vel
+        player pos
+        score
+        ?settings? - maybe a perma path for settings or something
+
+
+loading menu:
+    PAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGESPAGES
+    read from listdir("./saves") to get the names of the saves
+    delete button for unwanted saves
+    build the menu procedurally based on the number of and names of the saves
+    get decriptions of the save (on hover):
+        scores, options, positions, velocities, etc.

@@ -5,6 +5,7 @@ from src.paddle import Paddle
 from include.rect import *
 from include.slider import Slider
 from include.button import MenuButton
+from include.options import Options
 from include.vector2d import Vector2D
 from include.rgbslider import RGBSlider
 from include.frame_counter import FrameCounter
@@ -56,17 +57,19 @@ class Game:
         self.load_menus()
         self.print_menu_data()
 
-    def apply_options(self):
+    def apply_options(self):        
         options_menu = self.menus["options"]
-        self.player1.color = options_menu.get_element_by_id("player1_color", "rgbslider").get_color()
-        self.player2.color = options_menu.get_element_by_id("player2_color", "rgbslider").get_color()
-        self.puck.color = options_menu.get_element_by_id("puck_color", "rgbslider").get_color()
-        self.puck.magnitude = options_menu.get_element_by_id("difficulty", "slider").get_value()
-
+        self.options.set_fullscreen(self.window.fullscreen)
+        self.options.set_difficulty(options_menu.get_element_by_id("difficulty", "slider").get_value())
+        self.options.set_puck_color(options_menu.get_element_by_id("puck_color", "rgbslider").get_color())
+        self.options.set_player1_color(options_menu.get_element_by_id("player1_color", "rgbslider").get_color())
+        self.options.set_player2_color(options_menu.get_element_by_id("player2_color", "rgbslider").get_color())
+        self.options.apply_options(self)
 
     def print_menu_data(self):
         for filename in listdir("./menus"):
             with open("./menus/" + filename, "r") as file_:
+                if "load" in filename: continue
                 yaml_data = load_yaml(file_)["menu"]
                 print("\nYaml data for file %s" % filename)
                 pprint(yaml_data)
@@ -97,9 +100,7 @@ class Game:
 
     def save_game(self):
         filename = "./saves/" + strftime("%d%m%Y-%H_%M_%S") + ".yaml"
-        with open(filename, "w") as file_:
-            file_.write(dump_yaml(
-            {
+        save_data = {
                 "puck":
                     {"pos": self.puck.pos,
                      "vel": self.puck.vel,
@@ -113,8 +114,37 @@ class Game:
                     "score": self.player2.score,
                     "color": self.player2.color}
             }
-            ))
-    
+        with open(filename, "w") as file_:
+            file_.write(dump_yaml(save_data))
+        
+        with open("./menus/load_menu.yaml", "r+") as load_menu_file:
+            existing_yaml_data = load_yaml(load_menu_file.read())
+            yaml_data = existing_yaml_data["menu"]
+            pages = yaml_data["pages"]
+            pprint(existing_yaml_data)
+            pprint(pages)
+            top_value, page_number = None, None
+
+            # if it's empty, put the data at the first place on the first page
+            if not pages:
+                page_number = 1
+                top_value = 1
+
+            else:
+                for key in pages.keys():
+                    if len(pages[key]) < 5:
+                        page_number = key
+                        for value in pages[key]:
+                            top_value = value + 1
+            
+            # if there's no page with an open slot, put it at the first spot on the next page
+            if not top_value and not page_number:
+                page_number = max([key for key in pages.keys()]) + 1
+                top_value = 1
+            
+            print(page_number, top_value)
+            
+
     def load_game(self, filename="test.yaml"):
         if not filename.split('.')[1] == "yaml":
             raise ImportError(f"filename extension incorrect {filename.split('.')[1]}")
@@ -173,7 +203,7 @@ class Game:
         self.visible_menu = "main_menu"
 
     def goto_loadmenu(self):
-        self.load_game()
+        self.reset()
 
     def goto_options(self):
         self.is_paused = False
@@ -197,9 +227,10 @@ class Game:
         self.puck._temp_save_pos()
         for player in self.players:
             player._temp_save_pos()
-    
+
         self.window.set_fullscreen(not self.window.fullscreen)
-    
+        self.load_menus()
+
         self.puck._load_pos_from_temp()
         for player in self.players:
             player._load_pos_from_temp()
@@ -321,10 +352,11 @@ class Game:
 
         for filename in listdir("./menus"):
             with open("./menus/" + filename, "r") as file_:
+                if "load" in filename: continue
                 yaml_data = load_yaml(file_)["menu"]
                 menu_name = yaml_data["name"]
                 menu = Menu()
-                buttons = None
+                buttons = None 
                 sliders = None
                 rgbsliders = None
 
@@ -339,9 +371,7 @@ class Game:
                     for key in buttons.keys():
                         button = buttons[key]
                         data = get_button_data(button)
-                        print("multiline" in button.keys())
                         multiline = button["multiline"] if "multiline" in buttons.keys() else False
-                        print(data, multiline)
                         menu.add_button(MenuButton(*data, multiline=multiline))
 
                 if sliders:

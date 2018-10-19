@@ -1,0 +1,29 @@
+Thhis is gonna be where the data for drawing the primitives and text and stuff are. This may get procedurally generated like the load_menu.yaml is
+but I haven't decided yet. I have to go to work now 
+
+page:
+  1:
+    x:
+    y:
+    w:
+    h:
+  2:
+    x:
+    y:
+    w:
+    h:
+  3:
+    x:
+    y:
+    w:
+    h:
+  4:
+    x:
+    y:
+    w:
+    h:
+  5:
+    x:
+    y:
+    w:
+    h:

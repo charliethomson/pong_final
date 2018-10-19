@@ -3,9 +3,13 @@ from include.vector2d import Vector2D
 from pyglet.window import key, mouse, Window
 from pyglet.clock import schedule_interval
 from pyglet.app import run as run_game
+from pyglet.image import load
 
+favicon = load("./resources/favicon.png")
 keys = key.KeyStateHandler()
 window = Window(1000, 1000)
+window.set_icon(favicon)
+window.set_caption("Pong v1.4")
 window.push_handlers(keys)
 game = Game(window, keys)
 
