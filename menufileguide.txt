@@ -1,0 +1,43 @@
+menu:
+    name: "The name of the menu" - used as the key to retrieve the menu from the game.menus dictionary
+    buttons: - stores the buttons used in the menu
+        1: - enumeration to separate the buttons
+            x: a float between 0 and 1 - the percentage of the way from left to right at which the button is centered
+            y: the same way as above, but bottom to top, for the y position
+            w: percentage of the screen width that the button spans
+            h: percentage of the screen height that the button spans
+            text: "Text that is displayed on the button"
+            color: csv, 3 or 12 ints in series, no spaces
+            function: used to get the function pointer from the game.functions dictionary
+        2: would have the same <these>: as in <1>:
+    sliders: - stores the sliders in the menu
+        1: - enumeration to separate the sliders
+            x: same as buttons' x vals
+            y: same
+            w: same
+            h: same
+            min: the minimum value of the slider
+            max: the max value of the slider
+        2: - etc
+    rgbsliders: - these are complicated
+        1: - same enumeration
+            VARSET: - the color the sliders are changing, used in the game.varsets dictionary
+            R: - data for the red slider controls
+                x:
+                y:
+                w:
+                h:
+                min:
+                max:
+                color: - 12 value colors because gradients
+            G: -same data as R but for the green slider
+            B: -same data as R but for the blue slider
+            window: - data for the preview window for the colors from the sliders
+                x:
+                y:
+                w:
+                h:
+            label: - the text used to describe what the sliders change i.e. Player1 color, Puck color, etc.
+                x: where it
+                y: gets written
+                text: what gets written
