@@ -56,21 +56,13 @@ class Game:
         self.load_menus()
         self.print_menu_data()
 
-    def apply_settings(self):
+    def apply_options(self):
         options_menu = self.menus["options"]
-        for slider in options_menu.sliders:
-            pass
+        self.player1.color = options_menu.get_element_by_id("player1_color", "rgbslider").get_color()
+        self.player2.color = options_menu.get_element_by_id("player2_color", "rgbslider").get_color()
+        self.puck.color = options_menu.get_element_by_id("puck_color", "rgbslider").get_color()
+        self.puck.magnitude = options_menu.get_element_by_id("difficulty", "slider").get_value()
 
-
-    def commit_settings(self):
-        with open("./include/settings.yaml", "w") as settings:
-            options_menu = self.menus["options"]
-            print(options_menu)
-            # settings.write(dump_yaml(
-            # {"colors": {
-            #     "player1":
-            # }}
-            # ))
 
     def print_menu_data(self):
         for filename in listdir("./menus"):
@@ -171,6 +163,7 @@ class Game:
         self.start_game()
 
     def go_back(self):
+        if self.visible_menu == "options": self.apply_options()
         self.visible_menu = self.last_menu
 
     def goto_mainmenu(self):
@@ -187,7 +180,6 @@ class Game:
         self.last_menu = self.visible_menu
         self.visible_menu = "options"
     
-
     def unpause_game(self):
         self.is_running = True
         self.is_paused = False
@@ -212,7 +204,6 @@ class Game:
         for player in self.players:
             player._load_pos_from_temp()
         file = open("./resources/temp.yaml", "w+"); file.close()
-        self.load_menus()
 
     def exit_game(self):
         print("Exiting")
@@ -315,16 +306,18 @@ class Game:
             x, y = slider["x"] * self.window.width, slider["y"] * self.window.height
             w, h = slider["w"] * self.window.width, slider["h"] * self.window.height
             min_, max_ = slider["min"], slider["max"]
+            id_ = slider["id"]
             color = [int(num) for num in slider["color"].split(",")]
-            return (x, y, w, h, min_, max_, color)
+            return (x, y, w, h, min_, max_, color, id_)
 
         def get_button_data(button):
             x, y = button["x"] * self.window.width, button["y"] * self.window.height
             w, h = button["w"] * self.window.width, button["h"] * self.window.height
             text = button["text"]
+            id_ = button["id"]
             function = self.functions[button["function"]]
             color = [int(num) for num in button["color"].split(",")]
-            return (x, y, w, h, text, function, color)
+            return (x, y, w, h, text, function, id_, color)
 
         for filename in listdir("./menus"):
             with open("./menus/" + filename, "r") as file_:
@@ -364,6 +357,7 @@ class Game:
                         RSLIDER = Slider(*get_slider_data(rgbslider["R"]))
                         GSLIDER = Slider(*get_slider_data(rgbslider["G"]))
                         BSLIDER = Slider(*get_slider_data(rgbslider["B"]))
+                        id_ = rgbslider["id"]
                         win = rgbslider["window"]
                         window = Rect(
                             win["x"] * self.window.width,
@@ -378,7 +372,7 @@ class Game:
                             y=LABEL["y"] * self.window.height,
                             anchor_x="center"
                         )
-                        menu.add_rgbslider(RGBSlider(RSLIDER, GSLIDER, BSLIDER, window, label, varset))
+                        menu.add_rgbslider(RGBSlider(RSLIDER, GSLIDER, BSLIDER, window, label, varset, id_))
 
 
                 self.menus[menu_name] = menu

@@ -7,6 +7,7 @@ menu:
             y: 0.62
             w: 0.25
             h: 0.10
+            id: "fullscreen_toggle"
             text: "Toggle Fullscreen"
             color: 110,110,110
             function: "toggle_fullscreen"
@@ -16,6 +17,7 @@ menu:
             y: 0.38
             w: 0.25
             h: 0.10
+            id: "back_button"
             text: "Back"
             color: 110,110,110
             function: "go_back"
@@ -25,6 +27,7 @@ menu:
             y: 0.5
             w: 0.25
             h: 0.10
+            id: "difficulty"
             min: 2
             max: 20
             color: 255,255,255
@@ -32,11 +35,13 @@ menu:
     rgbsliders:
         1:
             VARSET: P1COLOR
+            id: "player1_color"
             R:
                 x: 0.2
                 y: 0.20
                 w: 0.3
                 h: 0.05
+                id: "player1_red"
                 min: 0
                 max: 255
                 color: 0,0,0,255,0,0,255,0,0,0,0,0
@@ -45,6 +50,7 @@ menu:
                 y: 0.14
                 w: 0.3
                 h: 0.05
+                id: "player1_green"
                 min: 0
                 max: 255
                 color: 0,0,0,0,255,0,0,255,0,0,0,0
@@ -53,6 +59,7 @@ menu:
                 y: 0.08
                 w: 0.3
                 h: 0.05
+                id: "player1_blue"
                 min: 0
                 max: 255
                 color: 0,0,0,0,0,255,0,0,255,0,0,0
@@ -67,11 +74,13 @@ menu:
                 text: "Player1 color"
         2:
             VARSET: P2COLOR
+            id: "player2_color"
             R:
                 x: 0.8
                 y: 0.20
                 w: 0.3
                 h: 0.05
+                id: "player2_red"
                 min: 0
                 max: 255
                 color: 0,0,0,255,0,0,255,0,0,0,0,0
@@ -80,6 +89,7 @@ menu:
                 y: 0.14
                 w: 0.3
                 h: 0.05
+                id: "player2_green"
                 min: 0
                 max: 255
                 color: 0,0,0,0,255,0,0,255,0,0,0,0
@@ -88,6 +98,7 @@ menu:
                 y: 0.08
                 w: 0.3
                 h: 0.05
+                id: "player2_blue"
                 min: 0
                 max: 255
                 color: 0,0,0,0,0,255,0,0,255,0,0,0
@@ -102,11 +113,13 @@ menu:
                 text: "Player2 color"
         3:
             VARSET: PUCKCOLOR
+            id: "puck_color"
             R:
                 x: 0.5
                 y: 0.20
                 w: 0.3
                 h: 0.05
+                id: "puck_red"
                 min: 0
                 max: 255
                 color: 0,0,0,255,0,0,255,0,0,0,0,0
@@ -115,6 +128,7 @@ menu:
                 y: 0.14
                 w: 0.3
                 h: 0.05
+                id: "puck_green"
                 min: 0
                 max: 255
                 color: 0,0,0,0,255,0,0,255,0,0,0,0
@@ -123,6 +137,7 @@ menu:
                 y: 0.08
                 w: 0.3
                 h: 0.05
+                id: "puck_blue"
                 min: 0
                 max: 255
                 color: 0,0,0,0,0,255,0,0,255,0,0,0

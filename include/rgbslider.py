@@ -3,7 +3,7 @@ from include.rect import Rect
 from include.slider import Slider
 
 class RGBSlider:
-    def __init__(self, RSLIDER, GSLIDER, BSLIDER, window, label, varset):
+    def __init__(self, RSLIDER, GSLIDER, BSLIDER, window, label, varset, id_):
         self.RSLIDER = RSLIDER
         self.GSLIDER = GSLIDER
         self.BSLIDER = BSLIDER
@@ -11,6 +11,7 @@ class RGBSlider:
         self.window = window
         self.label = label
         self.varset = varset
+        self.id_ = id_
         for slider in self.sliders:
             if not isinstance(slider, Slider):
                 raise TypeError(f"RGBSlider class initialised with non slider type  slider: {type(slider)}")

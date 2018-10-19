@@ -7,6 +7,7 @@ menu:
             y: 0.74
             w: 0.25
             h: 0.10
+            id: "resume_game"
             text: "Resume Game"
             color: 110,110,110
             function: "unpause_game"
@@ -15,6 +16,7 @@ menu:
             y: 0.62
             w: 0.25
             h: 0.10
+            id: "save_game"
             text: "Save Game"
             color: 110,110,110
             function: "save_game"
@@ -23,6 +25,7 @@ menu:
             y: 0.5
             w: 0.25
             h: 0.10
+            id: "goto_loadmenu"
             text: "Load Game"
             color: 110,110,110
             function: "goto_loadmenu"
@@ -31,6 +34,7 @@ menu:
             y: 0.38
             w: 0.25
             h: 0.10
+            id: "goto_options"
             text: "Options"
             color: 110,110,110
             function: "goto_options"
@@ -39,6 +43,7 @@ menu:
             y: 0.26
             w: 0.25
             h: 0.10
+            id: "goto_mainmenu"
             text: "Main Menu"
             color: 110,110,110
             function: "goto_mainmenu"
@@ -47,7 +52,7 @@ menu:
             y: 0.14
             w: 0.25
             h: 0.10
+            id: "exit_game"
             text: "Exit Game"
             color: 110,110,110
             function: "exit_game"
-    sliders:

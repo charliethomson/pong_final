@@ -9,6 +9,7 @@ class Menu:
         self.buttons = []
         self.sliders = []
         self.rgbsliders = []
+        self.elements = [self.buttons, self.sliders, self.rgbsliders]
 
     def __repr__(self):
         return "\n############################\nButtons: \n" +\
@@ -33,6 +34,30 @@ class Menu:
         if not isinstance(rgbslider, RGBSlider):
             raise TypeError("cannot add non rbgslider item to menu (<Menu>.add_rgbslider())")
         self.rgbsliders.append(rgbslider)
+
+    def get_element_by_id(self, id_, type_=None):
+        """
+        if no type given, returns the first item found in buttons (or) -> sliders (or) -> rgbsliders with the id `id_`
+        if a type is given, returns the first item of type `type_` with id `id_`
+        """
+        types = {
+            "button": self.buttons,
+            "slider": self.sliders,
+            "rgbslider": self.rgbsliders
+        }
+        if type_:
+            for item in types[type_]:
+                if item.id_ == id_:
+                    return item
+        else:
+            for element_type in self.elements:
+                for item in element_type:
+                    if item.id_ == id_:
+                        return item
+            
+
+        raise Exception(f"item with id {id_} not found (<Menu>.get_element_by_id)")
+
 
     def mouse_pressed(self, x, y, button, mod):
         for button in self.buttons:

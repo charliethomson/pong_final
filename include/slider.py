@@ -6,12 +6,13 @@ from include.vector2d import Vector2D
 from pyglet.text import Label
 
 class Slider:
-    def __init__(self, x, y, w, h, min_, max_, color, title=None):
+    def __init__(self, x, y, w, h, min_, max_, color, id_, title=None):
         self.curpos = Vector2D(x, y)
         self.rectpos = Vector2D(x, y)
         self.w, self.h = w, h
         self.range_ = self.min_, self.max_ = min_, max_
         self.color = color
+        self.id_ = id_
         self.title = title
         self.minx, self.maxx = self.rectpos.x - self.w // 2 + self.h // 2, self.rectpos.x + self.w // 2 - self.h // 2
 

@@ -4,9 +4,10 @@ from include.rect import *
 from include.vector2d import Vector2D
 
 class MenuButton:
-    def __init__(self, x, y, w, h, text, function, color=WHITE, multiline=False, function_args=None):
+    def __init__(self, x, y, w, h, text, function, id_, color=WHITE, multiline=False, function_args=None):
         self.text = text
         self.pos = Vector2D(x, y)
+        self.id_ = id_
         self.w, self.h = w, h
         if function_args:
             self.function_args = function_args if isinstance(function_args, (list, tuple)) else [function_args,]
@@ -21,7 +22,6 @@ class MenuButton:
         return f"BUTTON DATA: \n\ttext: {self.text} \n\tpos: {self.pos} \n\tw: {self.w} \n\th: {self.h} \n\tfunction: {self.function.__name__} \n\tcolor: {self.color}\n"
 
     def draw(self):
-        # print("DRAWING")
         Rect(self.pos.x, self.pos.y, self.w, self.h, color=self.color, draw=True)
         self.label = Label(
             text=self.text,
