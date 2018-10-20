@@ -28,10 +28,10 @@ class Options:
             self.player2_color = color
         else: raise TypeError("cannot set player2_color to non-list or non-tuple value")
         
-    def set_player2_color(self, color: (list, tuple)):
+    def set_puck_color(self, color: (list, tuple)):
         if isinstance(color, (list, tuple)):
-            self.player2_color = color
-        else: raise TypeError("cannot set player2_color to non-list or non-tuple value")
+            self.puck_color = color
+        else: raise TypeError("cannot set puck_color to non-list or non-tuple value")
     
     def apply_settings(self, game):
         options_menu = game.menus["options"]

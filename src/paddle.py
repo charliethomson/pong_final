@@ -11,7 +11,7 @@ class Paddle:
         self.side = side
         self.w, self.h = self.window.width // 40, self.window.height // 3.5
         self.reset()
-        self.color = WHITE
+        self.color = (127, 127, 127)
         self.score = 0
 
     def draw(self):

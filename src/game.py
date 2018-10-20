@@ -30,6 +30,7 @@ class Game:
         self.player2 = Paddle(self.window, self.keys, 1)
         self.players = self.player1, self.player2
         self.puck = Puck(self.window)
+        self.options = Options()
         self.is_running = False
         self.is_paused = False
         self.visible_menu = "main_menu"
@@ -55,16 +56,18 @@ class Game:
             "load_game": self.load_game
         }
         self.load_menus()
-        self.print_menu_data()
+        # self.print_menu_data()
 
     def apply_options(self):        
         options_menu = self.menus["options"]
+        new_difficulty = options_menu.get_element_by_id("difficulty", "slider").get_value()
+        if new_difficulty != self.puck.magnitude: self.reset()
         self.options.set_fullscreen(self.window.fullscreen)
-        self.options.set_difficulty(options_menu.get_element_by_id("difficulty", "slider").get_value())
+        self.options.set_difficulty(new_difficulty)
         self.options.set_puck_color(options_menu.get_element_by_id("puck_color", "rgbslider").get_color())
         self.options.set_player1_color(options_menu.get_element_by_id("player1_color", "rgbslider").get_color())
         self.options.set_player2_color(options_menu.get_element_by_id("player2_color", "rgbslider").get_color())
-        self.options.apply_options(self)
+        self.options.apply_settings(self)
 
     def print_menu_data(self):
         for filename in listdir("./menus"):
@@ -75,11 +78,15 @@ class Game:
                 pprint(yaml_data)
 
 
-    def reset(self):
+    def full_reset(self):
         self.puck.reset()
         for player in self.players:
             player.reset()
             player.score = 0
+
+    def reset(self):
+        self.puck.reset()
+        [player.reset() for player in self.players]
 
     def mouse_pressed(self, x, y, button, mod):
         if self.visible_menu:
@@ -96,7 +103,7 @@ class Game:
         self.is_running = True
         self.last_menu = self.visible_menu
         self.visible_menu = None
-        self.reset()
+        self.full_reset()
 
     def save_game(self):
         filename = "./saves/" + strftime("%d%m%Y-%H_%M_%S") + ".yaml"
@@ -162,8 +169,7 @@ class Game:
             
             for item in a:
                 if item in b:
-                    b.remove(item)
-            
+                    b.remove(item)      
             return b
 
         with open("./saves/" + filename) as file_:
@@ -185,7 +191,9 @@ class Game:
 
             self.player2.pos = player2["pos"]
             self.player2.color = player2["color"]
+            print(self.player1.score, player1["score"])
             self.player2.score = player2["score"]
+            print(self.player1.score, player1["score"])
 
             self.puck.pos = puck["pos"]
             self.puck.vel = puck["vel"]
@@ -203,7 +211,7 @@ class Game:
         self.visible_menu = "main_menu"
 
     def goto_loadmenu(self):
-        self.reset()
+        self.load_game()
 
     def goto_options(self):
         self.is_paused = False

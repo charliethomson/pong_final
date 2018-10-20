@@ -10,7 +10,7 @@ class Puck:
         self.window = window
         self.magnitude = 10
         self.w, self.h = 25, 25
-        self.color = WHITE
+        self.color = (127, 127, 127)
         self.reset()
 
     def reset(self):
