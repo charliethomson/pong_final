@@ -1,6 +1,9 @@
+from src import load_menu_ratios
+
 from src.puck import Puck
 from src.menu import Menu
 from src.paddle import Paddle
+
 
 from include.rect import *
 from include.slider import Slider
@@ -34,8 +37,10 @@ class Game:
         self.is_running = False
         self.is_paused = False
         self.visible_menu = "main_menu"
+        self.current_page = 0
         self.last_menu = None
         self.menus = {}
+        self.load_menu_pages = {}
         self.varsets = {
             "P1COLOR": self.player1.color,
             "P2COLOR": self.player2.color,
@@ -90,8 +95,12 @@ class Game:
 
     def mouse_pressed(self, x, y, button, mod):
         if self.visible_menu:
-            menu = self.menus[self.visible_menu]
-            menu.mouse_pressed(x, y, button, mod)
+            if not self.visible_menu == "load_menu":
+                menu = self.menus[self.visible_menu]
+                menu.mouse_pressed(x, y, button, mod)
+            else:
+                page = self.load_menu_pages[self.current_page]
+                page.mouse_pressed(x, y, button, mod)
 
     def mouse_drag(self, x, y, dx, dy, button, mod):
         if self.visible_menu:
@@ -106,7 +115,7 @@ class Game:
         self.full_reset()
 
     def save_game(self):
-        filename = "./saves/" + strftime("%d%m%Y-%H_%M_%S") + ".yaml"
+        filename = "./saves/" + strftime("%d%m%y-%H_%M_%S") + ".yaml"
         save_data = {
                 "puck":
                     {"pos": self.puck.pos,
@@ -124,33 +133,7 @@ class Game:
         with open(filename, "w") as file_:
             file_.write(dump_yaml(save_data))
         
-        with open("./menus/load_menu.yaml", "r+") as load_menu_file:
-            existing_yaml_data = load_yaml(load_menu_file.read())
-            yaml_data = existing_yaml_data["menu"]
-            pages = yaml_data["pages"]
-            pprint(existing_yaml_data)
-            pprint(pages)
-            top_value, page_number = None, None
-
-            # if it's empty, put the data at the first place on the first page
-            if not pages:
-                page_number = 1
-                top_value = 1
-
-            else:
-                for key in pages.keys():
-                    if len(pages[key]) < 5:
-                        page_number = key
-                        for value in pages[key]:
-                            top_value = value + 1
-            
-            # if there's no page with an open slot, put it at the first spot on the next page
-            if not top_value and not page_number:
-                page_number = max([key for key in pages.keys()]) + 1
-                top_value = 1
-            
-            print(page_number, top_value)
-            
+        
 
     def load_game(self, filename="test.yaml"):
         if not filename.split('.')[1] == "yaml":
@@ -191,14 +174,13 @@ class Game:
 
             self.player2.pos = player2["pos"]
             self.player2.color = player2["color"]
-            print(self.player1.score, player1["score"])
             self.player2.score = player2["score"]
-            print(self.player1.score, player1["score"])
 
             self.puck.pos = puck["pos"]
             self.puck.vel = puck["vel"]
             self.puck.color = puck["color"]
-        self.start_game()
+        
+        self.unpause_game()
 
     def go_back(self):
         if self.visible_menu == "options": self.apply_options()
@@ -211,7 +193,8 @@ class Game:
         self.visible_menu = "main_menu"
 
     def goto_loadmenu(self):
-        self.load_game()
+        self.build_load_menus()
+        self.visible_menu = "load_menu"
 
     def goto_options(self):
         self.is_paused = False
@@ -263,12 +246,19 @@ class Game:
             [player.draw() for player in self.players]
         else:
             if self.visible_menu:
-                # print(self.visible_menu)
-                menu = self.menus[self.visible_menu]
-                menu.draw()
-                for button in menu.buttons:
-                    if button.contains(self.mouse_position):
-                        button.on_hover()
+                if self.visible_menu == "load_menu":
+                    page = self.load_menu_pages[self.current_page]
+                    page.draw()
+                    for button in page.buttons:
+                        if button.contains(self.mouse_position):
+                            button.on_hover()
+                else:
+                    # print(self.visible_menu)
+                    menu = self.menus[self.visible_menu]
+                    menu.draw()
+                    for button in menu.buttons:
+                        if button.contains(self.mouse_position):
+                            button.on_hover()
         if self.is_paused:
             # if self.keys[P]: self.unpause_game()
             self.puck.draw()
@@ -416,43 +406,31 @@ class Game:
                 self.menus[menu_name] = menu
 
     def build_load_menus(self):
+        if len(listdir("./saves")) == 0:
+        page = Menu()
+        for index, save in sorted(enumerate(listdir("./saves"))):
+            page_number = index // 5
+            x = 0.50 * self.window.width
+            y = load_menu_ratios[index % 5] * self.window.height
+            w = 0.25 * self.window.width
+            h = 0.10 * self.window.height
+            if len(page.buttons) == 5:
+                # next button
+                next_x, next_y = 
+                page.add_button(MenuButton())
+                self.load_menu_pages[page_number - 1] = page
+                print(self.load_menu_pages)
+                page = Menu()
+                page.add_button(MenuButton(x, y, w, h, save, self.load_game, color=MID_GRAY, id_=f"load_game - {save}", function_args=save))
+            else:
+                page.add_button(MenuButton(x, y, w, h, save, self.load_game, color=MID_GRAY, id_=f"load_game - {save}", function_args=save))
+        self.load_menu_pages[page_number] = page
+
+    def goto_load_menu_page(self, page_number):
         pass
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            
 
 
 

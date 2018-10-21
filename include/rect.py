@@ -1,6 +1,7 @@
 
 from pyglet.gl import GL_QUADS
 from pyglet.graphics import draw as gl_draw
+from include.vector2d import Vector2D
 
 # MODE CONSTANTS
 CENTER = "center"
@@ -14,6 +15,10 @@ RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 BLACK = (  0,   0,   0)
+LIGHT_GRAY = (220, 220, 220)
+MID_LIGHT_GRAY = (165, 165, 165)
+MID_GRAY = (110, 110, 110)
+DARK_GRAY = (55, 55, 55)
 #
 
 class Rect:

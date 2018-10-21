@@ -15,6 +15,7 @@ game = Game(window, keys)
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
+    print(x, y)
     game.mouse_position = Vector2D(x, y)
 
 @window.event
