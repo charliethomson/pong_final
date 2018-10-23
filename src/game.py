@@ -510,7 +510,7 @@ class Game:
         rm("./saves/" + filename)
         self.build_load_menus()
 
-        if self.load_menu_pages[self.current_page].buttons
+        # if self.load_menu_pages[self.current_page].buttons
 
     def goto_load_menu_page(self, page_number):
         if page_number == -1: self.go_back()
