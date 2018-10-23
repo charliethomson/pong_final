@@ -54,6 +54,7 @@ class Menu:
                 for item in element_type:
                     if item.id_ == id_:
                         return item
+        
             
 
         raise Exception(f"item with id {id_} not found (<Menu>.get_element_by_id)")

@@ -9,7 +9,7 @@ class MenuButton:
         self.pos = Vector2D(x, y)
         self.id_ = id_
         self.w, self.h = w, h
-        if function_args:
+        if function_args != None:
             self.function_args = function_args if isinstance(function_args, (list, tuple)) else [function_args,]
         else: self.function_args = None
         self.function = function
@@ -19,7 +19,7 @@ class MenuButton:
 
     def __repr__(self):
         ## DEBUG ##
-        return f"BUTTON DATA: \n\ttext: {self.text} \n\tpos: {self.pos} \n\tw: {self.w} \n\th: {self.h} \n\tfunction: {self.function.__name__} \n\tcolor: {self.color}\n"
+        return f"BUTTON DATA: \n\tid: {self.id_}\n\ttext: {self.text} \n\tpos: {self.pos} \n\tw: {self.w} \n\th: {self.h} \n\tfunction: {self.function.__name__} \n\tcolor: {self.color}\n"
 
     def draw(self):
         Rect(self.pos.x, self.pos.y, self.w, self.h, color=self.color, draw=True)
@@ -53,8 +53,7 @@ class MenuButton:
         self.color = tuple([color + 25 for color in self.color])
 
     def on_click(self):
-        if not self.function_args:  
+        if self.function_args == None:
             self.function()
         else:
-
             self.function(*self.function_args)

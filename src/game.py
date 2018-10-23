@@ -15,8 +15,10 @@ from include.frame_counter import FrameCounter
 
 from pyglet.text import Label
 from pyglet.window.key import W, S, UP, DOWN, P
+from pyglet.window import FPSDisplay
 
 from os import listdir
+from os import remove as rm
 from time import strftime
 from yaml import load as load_yaml
 from yaml import dump as dump_yaml
@@ -35,10 +37,12 @@ class Game:
         self.puck = Puck(self.window)
         self.options = Options()
         self.is_running = False
+        self.show_fps = True
         self.is_paused = False
         self.visible_menu = "main_menu"
         self.current_page = 0
         self.last_menu = None
+        self.fps_clock = FPSDisplay(self.window)
         self.menus = {}
         self.load_menu_pages = {}
         self.varsets = {
@@ -52,12 +56,13 @@ class Game:
             "goto_options": self.goto_options,
             "exit_game": self.exit_game,
             "toggle_fullscreen": self.toggle_fullscreen,
+            "toggle_show_fps": self.toggle_show_fps,
             "goto_mainmenu": self.goto_mainmenu,
             "save_game": self.save_game,
             "pause_game": self.pause_game,
             "unpause_game": self.unpause_game,
             "go_back": self.go_back,
-            ###
+            "delete": self.delete_save,
             "load_game": self.load_game
         }
         self.load_menus()
@@ -89,6 +94,9 @@ class Game:
             player.reset()
             player.score = 0
 
+    def toggle_show_fps(self):
+        self.show_fps = not self.show_fps
+
     def reset(self):
         self.puck.reset()
         [player.reset() for player in self.players]
@@ -104,6 +112,7 @@ class Game:
 
     def mouse_drag(self, x, y, dx, dy, button, mod):
         if self.visible_menu:
+            if self.visible_menu == "load_menu": return 0;
             menu = self.menus[self.visible_menu]
             menu.mouse_drag(x, y, dx, dy, button, mod)
 
@@ -193,7 +202,12 @@ class Game:
         self.visible_menu = "main_menu"
 
     def goto_loadmenu(self):
+        if len(listdir("./saves")) == 0: print("No saves"); return 0
+        print("Building menu")
         self.build_load_menus()
+        print("Finished")
+        if not self.last_menu == self.visible_menu:
+            self.last_menu = self.visible_menu
         self.visible_menu = "load_menu"
 
     def goto_options(self):
@@ -235,6 +249,8 @@ class Game:
     def mainloop(self, dt):
         self.frame_counter.on_frame()
         self.window.clear()
+        if self.show_fps:
+            self.fps_clock.draw()
         if self.is_running:
             if self.keys[P]: self.pause_game()
             self.handle_motion()
@@ -247,6 +263,7 @@ class Game:
         else:
             if self.visible_menu:
                 if self.visible_menu == "load_menu":
+                    # print(self.load_menu_pages)
                     page = self.load_menu_pages[self.current_page]
                     page.draw()
                     for button in page.buttons:
@@ -266,7 +283,6 @@ class Game:
             [player.draw() for player in self.players]
         if self.visible_menu == "pause": self.is_paused = True
         else: self.is_paused = False
-
 
     def handle_motion(self):
         if self.keys[W]:    self.player1.move( 10)
@@ -406,29 +422,101 @@ class Game:
                 self.menus[menu_name] = menu
 
     def build_load_menus(self):
-        if len(listdir("./saves")) == 0:
+
+
+        TOTAL_PAGES = (len(listdir("./saves")) / 5)
+        print(TOTAL_PAGES)
+        # if it's not a whole number
+        if TOTAL_PAGES % 1 != 0.0:
+            TOTAL_PAGES = int(TOTAL_PAGES) + 1
+            EVEN_PAGES = False
+        else:
+            TOTAL_PAGES = int(TOTAL_PAGES)
+            EVEN_PAGES = True
+        print(TOTAL_PAGES)
         page = Menu()
+
+        def commit_page(page, page_number):
+            if page_number != 0:
+                # last page button
+                print("i", page_number)
+                page.add_button(MenuButton(0.315 * self.window.width, 
+                                           0.14 * self.window.height, 
+                                           h,
+                                           h,
+                                           "<",
+                                           self.goto_load_menu_page, 
+                                           color=MID_GRAY, 
+                                           id_="load_last_page", 
+                                           function_args=page_number - 1)
+                )
+                
+            # back button
+            page.add_button(MenuButton(0.500 * self.window.width,
+                                       0.140 * self.window.height,
+                                       w,
+                                       h,
+                                       "Back",
+                                       self.go_back,
+                                       color=MID_GRAY,
+                                       id_="load_go_back")
+            )
+
+
+            if page_number != TOTAL_PAGES - 1:
+                # next page button
+                print("AAAA", page_number, TOTAL_PAGES)
+                page.add_button(MenuButton(0.685 * self.window.width,
+                                           0.140 * self.window.height,
+                                           h, 
+                                           h,
+                                           ">",
+                                           self.goto_load_menu_page,
+                                           color=MID_GRAY,
+                                           id_="load_next_page",
+                                           function_args=page_number + 1)
+
+                )
+
+            self.load_menu_pages[page_number] = page
+
         for index, save in sorted(enumerate(listdir("./saves"))):
+            
             page_number = index // 5
             x = 0.50 * self.window.width
             y = load_menu_ratios[index % 5] * self.window.height
             w = 0.25 * self.window.width
             h = 0.10 * self.window.height
-            if len(page.buttons) == 5:
-                # next button
-                next_x, next_y = 
-                page.add_button(MenuButton())
-                self.load_menu_pages[page_number - 1] = page
-                print(self.load_menu_pages)
+
+            del_x = 0.685 * self.window.width
+
+
+            page.add_button(MenuButton(del_x, y, h, h, "x", self.delete_save, color=MID_GRAY, id_=f"delete game - {save}", function_args=save))
+            page.add_button(MenuButton(x, y, w, h, save.split('.')[0], self.load_game, color=MID_GRAY, id_=f"load_game - {save}", function_args=save))
+            if len(page.buttons) == 10:
+                commit_page(page, page_number)
                 page = Menu()
-                page.add_button(MenuButton(x, y, w, h, save, self.load_game, color=MID_GRAY, id_=f"load_game - {save}", function_args=save))
-            else:
-                page.add_button(MenuButton(x, y, w, h, save, self.load_game, color=MID_GRAY, id_=f"load_game - {save}", function_args=save))
-        self.load_menu_pages[page_number] = page
+        # try:
+        #     page.get_element_by_id("load_go_back")
+        # except Exception:
+        #     commit_page(page, page_number)
+        # print(page)
+        if not EVEN_PAGES:
+
+            commit_page(page, page_number)
+            print(self.load_menu_pages.keys())
+
+    def delete_save(self, filename):
+        rm("./saves/" + filename)
+        self.build_load_menus()
+
+        if self.load_menu_pages[self.current_page].buttons
 
     def goto_load_menu_page(self, page_number):
-        pass
-
+        if page_number == -1: self.go_back()
+        if not page_number in self.load_menu_pages.keys(): raise ValueError("page_number incorrect")
+        print("current: ", page_number)
+        self.current_page = page_number
 
             
 

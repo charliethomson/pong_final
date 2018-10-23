@@ -4,7 +4,7 @@ menu:
     buttons:
         1:
             x: 0.5
-            y: 0.62
+            y: 0.74
             w: 0.25
             h: 0.10
             id: "fullscreen_toggle"
@@ -13,6 +13,16 @@ menu:
             function: "toggle_fullscreen"
             multiline: true
         2:
+            x: 0.5
+            y: 0.62
+            w: 0.25
+            h: 0.10
+            id: "show_fps_toggle"
+            text: "Toggle FPS Display"
+            color: 110,110,110
+            function: "toggle_show_fps"
+            multiline: true
+        3:
             x: 0.5
             y: 0.38
             w: 0.25

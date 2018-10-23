@@ -1,9 +1,11 @@
 from src.game import Game
+
 from include.vector2d import Vector2D
-from pyglet.window import key, mouse, Window
-from pyglet.clock import schedule_interval
+
 from pyglet.app import run as run_game
 from pyglet.image import load
+from pyglet.clock import schedule_interval
+from pyglet.window import key, mouse, Window
 
 favicon = load("./resources/favicon.png")
 keys = key.KeyStateHandler()
@@ -15,7 +17,6 @@ game = Game(window, keys)
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
-    print(x, y)
     game.mouse_position = Vector2D(x, y)
 
 @window.event
