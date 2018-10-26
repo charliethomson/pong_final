@@ -1,8 +1,8 @@
-from src import load_menu_ratios
+from . import load_menu_ratios
 
-from src.puck import Puck
-from src.menu import Menu
-from src.paddle import Paddle
+from .puck import Puck
+from .menu import Menu
+from .paddle import Paddle
 
 
 from include.rect import *
@@ -14,8 +14,8 @@ from include.rgbslider import RGBSlider
 from include.frame_counter import FrameCounter
 
 from pyglet.text import Label
-from pyglet.window.key import W, S, UP, DOWN, P
 from pyglet.window import FPSDisplay
+from pyglet.window.key import W, S, UP, DOWN, P
 
 from os import listdir
 from os import remove as rm
@@ -27,24 +27,36 @@ from pprint import pprint
 
 class Game:
     def __init__(self, window, keys):
+        """
+        window: the window for the game to be run in
+        keys: <pyglet.window.key.KeyStateHandler> object that handles keys
+        """
         self.window = window
+        
         self.keys = keys
-        self.frame_counter = FrameCounter(0)
         self.mouse_position = Vector2D()
+
+        self.options = Options()
+        self.show_fps = True
+        self.fps_clock = FPSDisplay(self.window)
+        self.frame_counter = FrameCounter(0)
+        
         self.player1 = Paddle(self.window, self.keys, 0)
         self.player2 = Paddle(self.window, self.keys, 1)
         self.players = self.player1, self.player2
+        
         self.puck = Puck(self.window)
-        self.options = Options()
-        self.is_running = False
-        self.show_fps = True
+        
         self.is_paused = False
-        self.visible_menu = "main_menu"
-        self.current_page = 0
-        self.last_menu = None
-        self.fps_clock = FPSDisplay(self.window)
+        self.is_running = False
+
         self.menus = {}
+        self.last_menu = None
+        self.visible_menu = "main_menu"
+
+        self.current_page = 0
         self.load_menu_pages = {}
+
         self.varsets = {
             "P1COLOR": self.player1.color,
             "P2COLOR": self.player2.color,
@@ -65,18 +77,20 @@ class Game:
             "delete": self.delete_save,
             "load_game": self.load_game
         }
-        self.load_menus()
-        # self.print_menu_data()
 
-    def apply_options(self):        
+        self.load_menus()
+
+    def apply_options(self):
         options_menu = self.menus["options"]
         new_difficulty = options_menu.get_element_by_id("difficulty", "slider").get_value()
         if new_difficulty != self.puck.magnitude: self.reset()
-        self.options.set_fullscreen(self.window.fullscreen)
-        self.options.set_difficulty(new_difficulty)
-        self.options.set_puck_color(options_menu.get_element_by_id("puck_color", "rgbslider").get_color())
-        self.options.set_player1_color(options_menu.get_element_by_id("player1_color", "rgbslider").get_color())
-        self.options.set_player2_color(options_menu.get_element_by_id("player2_color", "rgbslider").get_color())
+        self.options = Options(
+            player1_color=options_menu.get_element_by_id("player1_color").get_color(),
+            player2_color=options_menu.get_element_by_id("player2_color").get_color(),
+            puck_color=options_menu.get_element_by_id("puck_color").get_color(),
+            is_fullscreen=self.window.fullscreen,
+            difficulty=new_difficulty
+        )
         self.options.apply_settings(self)
 
     def print_menu_data(self):
@@ -94,8 +108,12 @@ class Game:
             player.reset()
             player.score = 0
 
-    def toggle_show_fps(self):
-        self.show_fps = not self.show_fps
+    def toggle_show_fps(self, set_=None):
+        if not set_:
+            self.show_fps = not self.show_fps
+        else:
+            assert isinstance(set_, bool)
+            self.show_fps = set_
 
     def reset(self):
         self.puck.reset()
@@ -137,7 +155,9 @@ class Game:
                 "player2":
                     {"pos": self.player2.pos,
                     "score": self.player2.score,
-                    "color": self.player2.color}
+                    "color": self.player2.color},
+                "fullscreen": self.window.fullscreen,
+                "show_fps": self.show_fps
             }
         with open(filename, "w") as file_:
             file_.write(dump_yaml(save_data))
@@ -167,7 +187,7 @@ class Game:
         with open("./saves/" + filename) as file_:
             yaml_data = load_yaml(file_.read())
             missing = ""
-            acceptable = ["player1", "player2", "puck"]
+            acceptable = ["player1", "player2", "puck", "fullscreen", "show_fps"]
             datapoints = [data for data in yaml_data]
             missing_datapoints = remove_duplicates(datapoints, acceptable)
             missing += ', '.join(missing_datapoints)
@@ -176,6 +196,9 @@ class Game:
             player1 = yaml_data["player1"]
             player2 = yaml_data["player2"]
             puck = yaml_data["puck"]
+
+            self.window.set_fullscreen(yaml_data["fullscreen"])
+            self.toggle_show_fps(yaml_data["show_fps"])
             
             self.player1.pos = player1["pos"]
             self.player1.color = player1["color"]
@@ -203,9 +226,9 @@ class Game:
 
     def goto_loadmenu(self):
         if len(listdir("./saves")) == 0: print("No saves"); return 0
-        print("Building menu")
+        # print("Building menu")
         self.build_load_menus()
-        print("Finished")
+        # print("Finished")
         if not self.last_menu == self.visible_menu:
             self.last_menu = self.visible_menu
         self.visible_menu = "load_menu"
@@ -246,22 +269,8 @@ class Game:
         self.window.close()
         exit()
 
-    def mainloop(self, dt):
-        self.frame_counter.on_frame()
-        self.window.clear()
-        if self.show_fps:
-            self.fps_clock.draw()
-        if self.is_running:
-            if self.keys[P]: self.pause_game()
-            self.handle_motion()
-            self.handle_collision()
-            self.keep_in_bounds()
-            self.puck.draw()
-            self.puck.update()
-            self.draw_scores()
-            [player.draw() for player in self.players]
-        else:
-            if self.visible_menu:
+    def draw_current_menu(self):
+        if self.visible_menu:
                 if self.visible_menu == "load_menu":
                     # print(self.load_menu_pages)
                     page = self.load_menu_pages[self.current_page]
@@ -276,11 +285,30 @@ class Game:
                     for button in menu.buttons:
                         if button.contains(self.mouse_position):
                             button.on_hover()
+
+    def mainloop(self, dt):
+        self.frame_counter.on_frame()
+        self.window.clear()
+        if self.show_fps:
+            self.fps_clock.draw()
+        if self.is_running:
+            if self.keys[P]: self.pause_game(); self.load_menus()
+            self.handle_motion()
+            self.handle_collision()
+            self.keep_in_bounds()
+            self.puck.draw()
+            self.puck.update()
+            self.draw_scores()
+            [player.draw() for player in self.players]
+        elif not self.is_paused:
+            self.draw_current_menu()
+            
         if self.is_paused:
             # if self.keys[P]: self.unpause_game()
             self.puck.draw()
             self.draw_scores()
             [player.draw() for player in self.players]
+            self.draw_current_menu()
         if self.visible_menu == "pause": self.is_paused = True
         else: self.is_paused = False
 
@@ -425,7 +453,6 @@ class Game:
 
 
         TOTAL_PAGES = (len(listdir("./saves")) / 5)
-        print(TOTAL_PAGES)
         # if it's not a whole number
         if TOTAL_PAGES % 1 != 0.0:
             TOTAL_PAGES = int(TOTAL_PAGES) + 1
@@ -433,13 +460,11 @@ class Game:
         else:
             TOTAL_PAGES = int(TOTAL_PAGES)
             EVEN_PAGES = True
-        print(TOTAL_PAGES)
         page = Menu()
 
         def commit_page(page, page_number):
             if page_number != 0:
                 # last page button
-                print("i", page_number)
                 page.add_button(MenuButton(0.315 * self.window.width, 
                                            0.14 * self.window.height, 
                                            h,
@@ -465,7 +490,6 @@ class Game:
 
             if page_number != TOTAL_PAGES - 1:
                 # next page button
-                print("AAAA", page_number, TOTAL_PAGES)
                 page.add_button(MenuButton(0.685 * self.window.width,
                                            0.140 * self.window.height,
                                            h, 
@@ -504,23 +528,20 @@ class Game:
         if not EVEN_PAGES:
 
             commit_page(page, page_number)
-            print(self.load_menu_pages.keys())
 
     def delete_save(self, filename):
         rm("./saves/" + filename)
-        self.build_load_menus()
+        if len(listdir("./saves")) == 0:
+            self.go_back()
+            print("No saves")
+        else:
+            self.build_load_menus()
 
-        # if self.load_menu_pages[self.current_page].buttons
-
+        
+        
     def goto_load_menu_page(self, page_number):
         if page_number == -1: self.go_back()
         if not page_number in self.load_menu_pages.keys(): raise ValueError("page_number incorrect")
-        print("current: ", page_number)
+        # print("current: ", page_number)
         self.current_page = page_number
 
-            
-
-
-
-
-#

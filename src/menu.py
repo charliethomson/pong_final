@@ -65,6 +65,18 @@ class Menu:
             if button.contains(Vector2D(x, y)):
                 button.on_click()
 
+        for slider in self.sliders:
+            if slider.back_contains(Vector2D(x, y)) and slider.minx < x < slider.maxx:
+                slider.curpos.x = x
+
+        for rgbslider in self.rgbsliders:
+            for slider in rgbslider.sliders:
+                if slider.back_contains(Vector2D(x, y)) and slider.minx < x < slider.maxx:
+                    slider.curpos.x = x
+            
+        
+
+
     def mouse_drag(self, x, y, dx, dy, button, mod):
         for slider in self.sliders:
             if slider.contains(Vector2D(x, y)) and slider.minx < x < slider.maxx:

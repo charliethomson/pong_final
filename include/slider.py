@@ -60,7 +60,14 @@ SLIDER DATA:
             and point.y > self.curpos.y - self.h // 2
             )
 
-
+    def back_contains(self, point):
+        assert isinstance(point, Vector2D)
+        return (
+                point.x < self.rectpos.x + self.w // 2
+            and point.x > self.rectpos.x - self.w // 2
+            and point.y < self.rectpos.y + self.h // 2
+            and point.y > self.rectpos.y - self.h // 2
+            )
 
     def get_value(self):
         return int(remap(self.curpos.x, self.minx, self.maxx, self.min_, self.max_))

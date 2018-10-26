@@ -5,10 +5,12 @@ from include.vector2d import Vector2D
 from pyglet.app import run as run_game
 from pyglet.image import load
 from pyglet.clock import schedule_interval
-from pyglet.window import key, mouse, Window
+from pyglet.window import mouse, Window
+from pyglet.window.key import KeyStateHandler
+
 
 favicon = load("./resources/favicon.png")
-keys = key.KeyStateHandler()
+keys = KeyStateHandler()
 window = Window(1000, 1000)
 window.set_icon(favicon)
 window.set_caption("Pong v1.4")
@@ -26,6 +28,9 @@ def on_mouse_press(x, y, button, mod):
 @window.event
 def on_mouse_drag(x, y, dx, dy, button, mod):
     game.mouse_drag(x, y, dx, dy, button, mod)
+
+
+
 
 schedule_interval(game.mainloop, 1/60.0)
 if __name__ == "__main__":

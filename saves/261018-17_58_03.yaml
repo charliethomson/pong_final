@@ -1,0 +1,14 @@
+fullscreen: true
+player1:
+  color: !!python/tuple [127, 127, 127]
+  pos: !!python/object:include.vector2d.Vector2D {x: 67.2, y: 574.64}
+  score: 2
+player2:
+  color: !!python/tuple [127, 127, 127]
+  pos: !!python/object:include.vector2d.Vector2D {x: 1852.8, y: 932.24}
+  score: 1
+puck:
+  color: !!python/tuple [127, 127, 127]
+  pos: !!python/object:include.vector2d.Vector2D {x: 1522.2050361929123, y: 745.0287132313746}
+  vel: !!python/object:include.vector2d.Vector2D {x: -2.323929547755061, y: 9.726219792759721}
+show_fps: true
