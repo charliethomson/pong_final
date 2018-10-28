@@ -33,5 +33,4 @@ def on_mouse_drag(x, y, dx, dy, button, mod):
 
 
 schedule_interval(game.mainloop, 1/60.0)
-if __name__ == "__main__":
-    run_game()
+run_game()

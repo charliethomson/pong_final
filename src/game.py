@@ -11,7 +11,6 @@ from include.button import MenuButton
 from include.options import Options
 from include.vector2d import Vector2D
 from include.rgbslider import RGBSlider
-from include.frame_counter import FrameCounter
 
 from pyglet.text import Label
 from pyglet.window import FPSDisplay
@@ -19,6 +18,7 @@ from pyglet.window.key import W, S, UP, DOWN, P
 
 from os import listdir
 from os import remove as rm
+from sys import exit as sysexit
 from time import strftime
 from yaml import load as load_yaml
 from yaml import dump as dump_yaml
@@ -32,27 +32,28 @@ class Game:
         keys: <pyglet.window.key.KeyStateHandler> object that handles keys
         """
         self.window = window
-        
+
         self.keys = keys
         self.mouse_position = Vector2D()
 
         self.options = Options()
         self.show_fps = True
         self.fps_clock = FPSDisplay(self.window)
-        self.frame_counter = FrameCounter(0)
-        
+
+
         self.player1 = Paddle(self.window, self.keys, 0)
         self.player2 = Paddle(self.window, self.keys, 1)
         self.players = self.player1, self.player2
-        
+
         self.puck = Puck(self.window)
-        
+
         self.is_paused = False
         self.is_running = False
 
         self.menus = {}
         self.last_menu = None
         self.visible_menu = "main_menu"
+        self.current_save = None
 
         self.current_page = 0
         self.load_menu_pages = {}
@@ -63,19 +64,19 @@ class Game:
             "PUCKCOLOR": self.puck.color
         }
         self.functions = {
-            "start_game": self.start_game,
-            "goto_loadmenu": self.goto_loadmenu,
-            "goto_options": self.goto_options,
-            "exit_game": self.exit_game,
             "toggle_fullscreen": self.toggle_fullscreen,
             "toggle_show_fps": self.toggle_show_fps,
             "goto_mainmenu": self.goto_mainmenu,
-            "save_game": self.save_game,
-            "pause_game": self.pause_game,
+            "goto_loadmenu": self.goto_loadmenu,
+            "goto_options": self.goto_options,
             "unpause_game": self.unpause_game,
-            "go_back": self.go_back,
+            "start_game": self.start_game,
+            "pause_game": self.pause_game,
+            "load_game": self.load_game,
+            "save_game": self.save_game,
+            "exit_game": self.exit_game,
             "delete": self.delete_save,
-            "load_game": self.load_game
+            "go_back": self.go_back
         }
 
         self.load_menus()
@@ -92,8 +93,10 @@ class Game:
             difficulty=new_difficulty
         )
         self.options.apply_settings(self)
+        with open("./resources/.temp_options.yaml", "w") as file_:
+            file_.write(dump_yaml({"options": self.options}))
 
-    def print_menu_data(self):
+    def _print_menu_data(self):
         for filename in listdir("./menus"):
             with open("./menus/" + filename, "r") as file_:
                 if "load" in filename: continue
@@ -157,17 +160,20 @@ class Game:
                     "score": self.player2.score,
                     "color": self.player2.color},
                 "fullscreen": self.window.fullscreen,
-                "show_fps": self.show_fps
+                "show_fps": self.show_fps,
+                "options": self.options
             }
         with open(filename, "w") as file_:
             file_.write(dump_yaml(save_data))
         
-        
+        self.current_save = filename.split("/")[2]
 
-    def load_game(self, filename="test.yaml"):
+
+
+    def load_game(self, filename):
         if not filename.split('.')[1] == "yaml":
             raise ImportError(f"filename extension incorrect {filename.split('.')[1]}")
-        
+
         def remove_duplicates(a, b):
             """
             removes all items that are in a from b and returns b
@@ -178,10 +184,10 @@ class Game:
             """
             if not isinstance(a, list) and not isinstance(b, list):
                 raise TypeError("a and b must be lists")
-            
+
             for item in a:
                 if item in b:
-                    b.remove(item)      
+                    b.remove(item)
             return b
 
         with open("./saves/" + filename) as file_:
@@ -197,9 +203,15 @@ class Game:
             player2 = yaml_data["player2"]
             puck = yaml_data["puck"]
 
+            try:
+                assert "fullscreen" and "show_fps" and "options" in yaml_data.keys()
+            except AssertionError:
+                rm(f"./saves/{filename}")
+                raise ImportError(f"save file corrupted")
             self.window.set_fullscreen(yaml_data["fullscreen"])
             self.toggle_show_fps(yaml_data["show_fps"])
-            
+            self.options = yaml_data["options"]
+
             self.player1.pos = player1["pos"]
             self.player1.color = player1["color"]
             self.player1.score = player1["score"]
@@ -211,7 +223,7 @@ class Game:
             self.puck.pos = puck["pos"]
             self.puck.vel = puck["vel"]
             self.puck.color = puck["color"]
-        
+        self.current_save = filename
         self.unpause_game()
 
     def go_back(self):
@@ -221,6 +233,7 @@ class Game:
     def goto_mainmenu(self):
         self.is_paused = False
         self.is_running = False
+        self.current_save = None
         self.last_menu = self.visible_menu
         self.visible_menu = "main_menu"
 
@@ -233,11 +246,23 @@ class Game:
             self.last_menu = self.visible_menu
         self.visible_menu = "load_menu"
 
+    def _init_temp_options(self):
+        with open("./resources/.temp_options.yaml", "w") as file_:
+            file_.write(
+                dump_yaml(
+                        {
+                    "options": Options()
+                    }
+                )
+            )
+
     def goto_options(self):
         self.is_paused = False
+        self._init_temp_options()
+        self.load_options()
         self.last_menu = self.visible_menu
         self.visible_menu = "options"
-    
+
     def unpause_game(self):
         self.is_running = True
         self.is_paused = False
@@ -262,12 +287,29 @@ class Game:
         self.puck._load_pos_from_temp()
         for player in self.players:
             player._load_pos_from_temp()
-        file = open("./resources/temp.yaml", "w+"); file.close()
+        rm("./resources/temp.yaml")
 
     def exit_game(self):
         print("Exiting")
         self.window.close()
-        exit()
+        sysexit(0)
+
+    def load_options(self):
+        filename = "./resources/.temp_options.yaml" if not self.current_save else f"./saves/{self.current_save}"
+        
+        with open(filename, "r") as file_:
+            yaml_data = load_yaml(file_.read())
+            try:
+                assert isinstance(yaml_data, dict)
+                assert "options" in yaml_data.keys()
+            except AssertionError:
+                raise ValueError("Save file corrupted")
+            
+            self.options = yaml_data["options"]
+        
+        options_menu = self.menus["options"]
+
+        self.options.set_options(options_menu)
 
     def draw_current_menu(self):
         if self.visible_menu:
@@ -287,7 +329,7 @@ class Game:
                             button.on_hover()
 
     def mainloop(self, dt):
-        self.frame_counter.on_frame()
+
         self.window.clear()
         if self.show_fps:
             self.fps_clock.draw()
@@ -302,7 +344,7 @@ class Game:
             [player.draw() for player in self.players]
         elif not self.is_paused:
             self.draw_current_menu()
-            
+
         if self.is_paused:
             # if self.keys[P]: self.unpause_game()
             self.puck.draw()
@@ -398,7 +440,7 @@ class Game:
                 yaml_data = load_yaml(file_)["menu"]
                 menu_name = yaml_data["name"]
                 menu = Menu()
-                buttons = None 
+                buttons = None
                 sliders = None
                 rgbsliders = None
 
@@ -465,17 +507,17 @@ class Game:
         def commit_page(page, page_number):
             if page_number != 0:
                 # last page button
-                page.add_button(MenuButton(0.315 * self.window.width, 
-                                           0.14 * self.window.height, 
+                page.add_button(MenuButton(0.315 * self.window.width,
+                                           0.14 * self.window.height,
                                            h,
                                            h,
                                            "<",
-                                           self.goto_load_menu_page, 
-                                           color=MID_GRAY, 
-                                           id_="load_last_page", 
+                                           self.goto_load_menu_page,
+                                           color=MID_GRAY,
+                                           id_="load_last_page",
                                            function_args=page_number - 1)
                 )
-                
+
             # back button
             page.add_button(MenuButton(0.500 * self.window.width,
                                        0.140 * self.window.height,
@@ -492,7 +534,7 @@ class Game:
                 # next page button
                 page.add_button(MenuButton(0.685 * self.window.width,
                                            0.140 * self.window.height,
-                                           h, 
+                                           h,
                                            h,
                                            ">",
                                            self.goto_load_menu_page,
@@ -505,7 +547,7 @@ class Game:
             self.load_menu_pages[page_number] = page
 
         for index, save in sorted(enumerate(listdir("./saves"))):
-            
+
             page_number = index // 5
             x = 0.50 * self.window.width
             y = load_menu_ratios[index % 5] * self.window.height
@@ -531,17 +573,19 @@ class Game:
 
     def delete_save(self, filename):
         rm("./saves/" + filename)
-        if len(listdir("./saves")) == 0:
+        if len(listdir("./saves"))== 0:
             self.go_back()
             print("No saves")
+        elif len(listdir("./saves")) % 5 == 0:
+            self.build_load_menus()
+            self.goto_load_menu_page(self.current_page - 1)
         else:
             self.build_load_menus()
 
-        
-        
+
+
     def goto_load_menu_page(self, page_number):
         if page_number == -1: self.go_back()
         if not page_number in self.load_menu_pages.keys(): raise ValueError("page_number incorrect")
         # print("current: ", page_number)
         self.current_page = page_number
-

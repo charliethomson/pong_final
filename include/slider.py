@@ -68,6 +68,9 @@ SLIDER DATA:
             and point.y < self.rectpos.y + self.h // 2
             and point.y > self.rectpos.y - self.h // 2
             )
+    
+    def set_value(self, value):
+        self.curpos.x = (((self.maxx - self.minx) * value + 1) / (self.max_ - self.min_) + self.minx)
 
     def get_value(self):
         return int(remap(self.curpos.x, self.minx, self.maxx, self.min_, self.max_))

@@ -30,6 +30,12 @@ RGBSLIDER:
 /{self.label.text}
 """
 
+    def set_value(self, color):
+        r, g, b = color
+        self.RSLIDER.set_value(r)
+        self.GSLIDER.set_value(g)
+        self.BSLIDER.set_value(b)
+
     def draw(self):
         self.label.draw()
         [slider.draw() for slider in self.sliders]

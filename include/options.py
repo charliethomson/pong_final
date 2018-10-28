@@ -1,6 +1,7 @@
+from src.menu import Menu
 
 class Options:
-    def __init__(self, player1_color=(255, 255, 255), player2_color=(255, 255, 255), puck_color=(255, 255, 255), is_fullscreen=False, difficulty=9):
+    def __init__(self, player1_color=(130, 130, 130), player2_color=(130, 130, 130), puck_color=(130, 130, 130), is_fullscreen=False, difficulty=9):
         self.player1_color = player1_color
         self.player2_color = player2_color
         self.puck_color    = puck_color
@@ -40,3 +41,21 @@ class Options:
         game.puck.color = self.puck_color
         game.puck.magnitude = self.difficulty
         game.window.set_fullscreen(self.is_fullscreen)
+    
+    def set_options(self, options_menu):
+        try:
+            assert isinstance(options_menu, Menu)
+        except AssertionError:
+            raise TypeError("options_menu must be a <src.menu.Menu> object")
+
+        player1_color = options_menu.get_element_by_id("player1_color", "rgbslider")
+        player2_color = options_menu.get_element_by_id("player2_color", "rgbslider")
+        puck_color    = options_menu.get_element_by_id("puck_color",    "rgbslider")
+
+        difficulty    = options_menu.get_element_by_id("difficulty", "slider")
+
+        player1_color.set_value(self.player1_color)
+        player2_color.set_value(self.player2_color)
+        puck_color.set_value(self.puck_color)
+
+        difficulty.set_value(self.difficulty)
