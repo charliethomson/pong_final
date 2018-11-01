@@ -1,6 +1,0 @@
-options: !!python/object:include.options.Options
-  difficulty: 9
-  is_fullscreen: true
-  player1_color: !!python/tuple [127, 127, 127]
-  player2_color: !!python/tuple [127, 127, 127]
-  puck_color: !!python/tuple [253, 65, 254]

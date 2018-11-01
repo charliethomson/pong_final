@@ -1,0 +1,20 @@
+fullscreen: false
+options: !!python/object:include.options.Options
+  difficulty: 9
+  is_fullscreen: false
+  player1_color: !!python/tuple [130, 130, 130]
+  player2_color: !!python/tuple [130, 130, 130]
+  puck_color: !!python/tuple [130, 130, 130]
+player1:
+  color: &id001 !!python/tuple [127, 127, 127]
+  pos: !!python/object:include.vector2d.Vector2D {x: 35, y: 500}
+  score: 0
+player2:
+  color: *id001
+  pos: !!python/object:include.vector2d.Vector2D {x: 965, y: 500}
+  score: 0
+puck:
+  color: !!python/tuple [127, 127, 127]
+  pos: !!python/object:include.vector2d.Vector2D {x: 609.3826375391054, y: 642.9525746707227}
+  vel: !!python/object:include.vector2d.Vector2D {x: 6.076813196616983, y: 7.941809703929055}
+show_fps: true
