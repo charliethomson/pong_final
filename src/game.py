@@ -15,7 +15,7 @@ from include.rgbslider import RGBSlider
 from pyglet.text import Label
 from pyglet.image import load
 from pyglet.window import FPSDisplay
-from pyglet.window.key import W, S, UP, DOWN, P
+from pyglet.window.key import W, S, UP, DOWN, P, LCTRL, LALT, D
 
 from os import listdir
 from os import remove as rm
@@ -40,7 +40,6 @@ class Game:
         self.options = Options()
         self.show_fps = True
         self.fps_clock = FPSDisplay(self.window)
-
 
         self.player1 = Paddle(self.window, self.keys, 0)
         self.player2 = Paddle(self.window, self.keys, 1)
@@ -268,55 +267,42 @@ class Game:
                     b.remove(item)
 
             return b
-        # open the file
-        
-        ###################################################################################################################
-        """REWRITE ME FOR THE LOVE OF GOD"""###############################################################################
-        ###################################################################################################################
-        ###################################################################################################################
 
+        # open the file
         with open("./saves/" + filename) as file_:
             # load the data from the yaml file
             yaml_data = load_yaml(file_.read())
 
-            
-            acceptable = ["player1", "player2", "puck", "fullscreen", "show_fps"]
-            datapoints = [data for data in yaml_data]
-            missing_datapoints = remove_duplicates(datapoints, acceptable)
-            missing = ', '.join(missing_datapoints)
-            if missing != '':
-                raise ImportError(f"error importing save from file {filename}; \nmissing data point{'' if ',' not in list(missing) else 's'} {missing}")
-            player1 = yaml_data["player1"]
-            player2 = yaml_data["player2"]
+            # raise an error if the save doesn't have something we need
+            assert \
+                "player1" and "player2" and "puck" and "fullscreen" and "show_fps" and "options" in yaml_data.keys(), \
+                "Error importing the save, key datapoint missing"
+
+            player1, player2 = yaml_data["player1"], yaml_data["player2"]
             puck = yaml_data["puck"]
 
-            try:
-                assert "fullscreen" and "show_fps" and "options" in yaml_data.keys()
-            except AssertionError:
-                rm(f"./saves/{filename}")
-                raise ImportError(f"save file corrupted")
+            # load the options
             self.window.set_fullscreen(yaml_data["fullscreen"])
             self.toggle_show_fps(yaml_data["show_fps"])
             self.options = yaml_data["options"]
 
+            # load the player1 object
             self.player1.pos = player1["pos"]
             self.player1.color = player1["color"]
             self.player1.score = player1["score"]
 
+            # load the player2 object
             self.player2.pos = player2["pos"]
             self.player2.color = player2["color"]
             self.player2.score = player2["score"]
 
+            # load the puck object
             self.puck.pos = puck["pos"]
             self.puck.vel = puck["vel"]
             self.puck.color = puck["color"]
+        # set the current save, unpause
         self.current_save = filename
         self.unpause_game()
-
-        ###################################################################################################################
-        ###################################################################################################################
-        ###################################################################################################################
-        ###################################################################################################################
 
     def go_back(self):
         """
