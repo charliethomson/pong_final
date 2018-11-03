@@ -14,18 +14,4 @@
 		<li>python main.py</li>
 		<li><a href="https://www.twitter.com/hashtag/ezpz">#ezpz</a></li>
 	</ul>
-
-	<h2>TO DO</h2>
-	<ul>
-		<li><strong><em><b>REFORMAT</b></em></strong></li>
-		<li>make the options not clear when you refresh/reenter the options menu B^)</li>
-		<li></li>
-	</ul>
-
-	<h2>IN PROGRESS</h2>
-	<ul>
-		<li>Reformatting</li>
-		<li>The position of the pucks is fucky when you go to fullscreen until they reset, I'm fixing that</li>
-		<li>Procrastinating on reformatting</li>
-	</ul>
 </html>

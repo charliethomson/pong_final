@@ -113,13 +113,6 @@ class Game:
                 print("\nYaml data for file %s" % filename)
                 pprint(yaml_data)
 
-    def setup(self):
-
-        favicon = load("./resources/favicon.png")
-        self.window.set_icon(favicon)
-        self.window.set_caption("Pong v1.4")
-        self._init_temp_options()
-        self.full_reset()
 
         
     def apply_options(self):
@@ -152,24 +145,17 @@ class Game:
         if self.is_paused:
             self.unpause_game()
 
-    def toggle_show_fps(self, set_=None):
+    def mouse_drag(self, x, y, dx, dy, button, mod):
         """
-        switches on/of the fps display
+        called when a user drags the mouse with `button` held, passes the event to the menus
         """
-        # if no set is given, it toggles
-        if set_ == None:
-            self.show_fps = not self.show_fps
-        # otherwise, if it's a bool or int (True, False; 1, 0), it sets it to the given value
-        else:
-            assert isinstance(set_, (bool, int)), "set_ must be bool or int"
-            self.show_fps = set_
-
-    def reset(self):
-        """
-        resets the puck, players' positions
-        """
-        self.puck.reset()
-        [player.reset() for player in self.players]
+        # If there is a menu
+        if self.visible_menu:
+            # pass if the menu is the loading menu, no sliders
+            if self.visible_menu == "load_menu": return 0;
+            # pass the event to the current menu
+            menu = self.menus[self.visible_menu]
+            menu.mouse_drag(x, y, dx, dy, button, mod)
 
     def mouse_pressed(self, x, y, button, mod):
         """
@@ -186,17 +172,19 @@ class Game:
                 page = self.load_menu_pages[self.current_page]
                 page.mouse_pressed(x, y, button, mod)
 
-    def mouse_drag(self, x, y, dx, dy, button, mod):
+    def reset(self):
         """
-        called when a user drags the mouse with `button` held, passes the event to the menus
+        resets the puck, players' positions
         """
-        # If there is a menu
-        if self.visible_menu:
-            # pass if the menu is the loading menu, no sliders
-            if self.visible_menu == "load_menu": return 0;
-            # pass the event to the current menu
-            menu = self.menus[self.visible_menu]
-            menu.mouse_drag(x, y, dx, dy, button, mod)
+        self.puck.reset()
+        [player.reset() for player in self.players]
+
+    def setup(self):
+        favicon = load("./resources/favicon.png")
+        self.window.set_icon(favicon)
+        self.window.set_caption("Pong v1.4")
+        self._init_temp_options()
+        self.full_reset()
 
     def start_game(self):
         """
@@ -208,101 +196,21 @@ class Game:
         self.last_menu = self.visible_menu
         self.visible_menu = None
         self.full_reset()
-
-    def save_game(self):
+    
+    def toggle_show_fps(self, set_=None):
         """
-        saves the game to a file in the ./saves/ directory
-        files are named DDMMYY-HR_MIN_SEC.yaml (24 hours for the HR)
+        switches on/of the fps display
         """
-        # Generate the save filename from the date / time
-        filename = "./saves/" + strftime("%d%m%y-%H_%M_%S") + ".yaml"
-        # generate the data to save from the data the game has about the current game :)
-        save_data = {
-                "puck":
-                    {"pos": self.puck.pos,
-                     "vel": self.puck.vel,
-                     "color": self.puck.color},
-                "player1":
-                    {"pos": self.player1.pos,
-                    "score": self.player1.score,
-                    "color": self.player1.color},
-                "player2":
-                    {"pos": self.player2.pos,
-                    "score": self.player2.score,
-                    "color": self.player2.color},
-                "fullscreen": self.window.fullscreen,
-                "show_fps": self.show_fps,
-                "options": self.options
-            }
-        # Save the data to the generated file
-        with open(filename, "w") as file_:
-            file_.write(dump_yaml(save_data))
-        
-        # set the current save variable 
-        self.current_save = filename.split("/")[2]
+        # if no set is given, it toggles
+        if set_ == None:
+            self.show_fps = not self.show_fps
+        # otherwise, if it's a bool or int (True, False; 1, 0), it sets it to the given value
+        else:
+            assert isinstance(set_, (bool, int)), "set_ must be bool or int"
+            self.show_fps = set_
 
-    def load_game(self, filename):
-        """
-        loads the game from file `filename`
-        """
-        # Raise an error if the file's path is incorrect (not ".yaml", all save files are yaml files)
-        if not filename.split('.')[1] == "yaml":
-            raise ImportError(f"filename extension incorrect {filename.split('.')[1]}")
 
-        def remove_duplicates(a, b):
-            """
-            removes all items that are in a from b and returns b
-            a = [1, 2, 3, 4]
-            b = [3, 4, 5, 6]
-            c = remove_duplicates(a, b)
-            c = [5, 6]
-            """
-            # raise an error if the given items aren't lists
-            if not isinstance(a, list) and not isinstance(b, list):
-                raise TypeError("a and b must be lists")
 
-            # iterate over a, check if that item is in b, if it is, remove it from b
-            for item in a:
-                if item in b:
-                    b.remove(item)
-
-            return b
-
-        # open the file
-        with open("./saves/" + filename) as file_:
-            # load the data from the yaml file
-            yaml_data = load_yaml(file_.read())
-
-            # raise an error if the save doesn't have something we need
-            assert \
-                "player1" and "player2" and "puck" and "fullscreen" and "show_fps" and "options" in yaml_data.keys(), \
-                "Error importing the save, key datapoint missing"
-
-            player1, player2 = yaml_data["player1"], yaml_data["player2"]
-            puck = yaml_data["puck"]
-
-            # load the options
-            self.window.set_fullscreen(yaml_data["fullscreen"])
-            self.toggle_show_fps(yaml_data["show_fps"])
-            self.options = yaml_data["options"]
-
-            # load the player1 object
-            self.player1.pos = player1["pos"]
-            self.player1.color = player1["color"]
-            self.player1.score = player1["score"]
-
-            # load the player2 object
-            self.player2.pos = player2["pos"]
-            self.player2.color = player2["color"]
-            self.player2.score = player2["score"]
-
-            # load the puck object
-            self.puck.pos = puck["pos"]
-            self.puck.vel = puck["vel"]
-            self.puck.color = puck["color"]
-        # set the current save, unpause
-        self.current_save = filename
-        self.unpause_game()
 
     def go_back(self):
         """
@@ -312,6 +220,17 @@ class Game:
         if self.visible_menu == "options": self.apply_options()
         # go back to the last menu
         self.visible_menu = self.last_menu
+    
+    def goto_load_menu_page(self, page_number):
+        """
+        goes to the page number `page_number`
+        """
+        # if the page number is -1, go back
+        if page_number == -1: self.go_back()
+        # if the page number is not in the pages dictionary, raise an error
+        if not page_number in self.load_menu_pages.keys(): raise ValueError("page_number incorrect")
+        # set the current page to the new one
+        self.current_page = page_number
 
     def goto_mainmenu(self):
         """
@@ -334,9 +253,9 @@ class Game:
         self.build_load_menus()
         # so we can go back lmaoooo
         if not self.last_menu == self.visible_menu:
+            # only set the last menu if it's different
             self.last_menu = self.visible_menu
         self.visible_menu = "load_menu"
-
 
     def goto_options(self):
         """
@@ -409,7 +328,7 @@ class Game:
             # load the data from yaml
             yaml_data = load_yaml(file_.read())
             # set the player1, 2 y positions / derationalise them
-            self.player1.pos.y = yaml_data["player1"] * self.window.height
+            self.player1.pos.y = yaml_data["player1"] * self.window.height 
             self.player2.pos.y = yaml_data["player2"] * self.window.height
 
             # set the puck pos, derationalise
@@ -686,6 +605,123 @@ class Game:
                 # add the menu to the menus dictionary with the key `menu_name`
                 self.menus[menu_name] = menu
 
+
+    def delete_save(self, filename):
+        """
+        deletes the save
+        """
+        # delete the save file
+        rm("./saves/" + filename)
+        # if we don't have any saves, go back 
+        if len(listdir("./saves"))== 0:
+            self.go_back()
+            print("No saves")
+        # if we clear a page, go to the previous page
+        elif len(listdir("./saves")) % 5 == 0:
+            self.build_load_menus()
+            self.goto_load_menu_page(self.current_page - 1)
+        # otherwise, refresh the menu
+        else:
+            self.build_load_menus()
+
+
+
+
+    def save_game(self):
+        """
+        saves the game to a file in the ./saves/ directory
+        files are named DDMMYY-HR_MIN_SEC.yaml (24 hours for the HR)
+        """
+        # Generate the save filename from the date / time
+        filename = "./saves/" + strftime("%d%m%y-%H_%M_%S") + ".yaml"
+        # generate the data to save from the data the game has about the current game :)
+        save_data = {
+                "puck":
+                    {"pos": self.puck.pos,
+                     "vel": self.puck.vel,
+                     "color": self.puck.color},
+                "player1":
+                    {"pos": self.player1.pos,
+                    "score": self.player1.score,
+                    "color": self.player1.color},
+                "player2":
+                    {"pos": self.player2.pos,
+                    "score": self.player2.score,
+                    "color": self.player2.color},
+                "fullscreen": self.window.fullscreen,
+                "show_fps": self.show_fps,
+                "options": self.options
+            }
+        # Save the data to the generated file
+        with open(filename, "w") as file_:
+            file_.write(dump_yaml(save_data))
+        
+        # set the current save variable 
+        self.current_save = filename.split("/")[2]
+
+    def load_game(self, filename):
+        """
+        loads the game from file `filename`
+        """
+        # Raise an error if the file's path is incorrect (not ".yaml", all save files are yaml files)
+        if not filename.split('.')[1] == "yaml":
+            raise ImportError(f"filename extension incorrect {filename.split('.')[1]}")
+
+        def remove_duplicates(a, b):
+            """
+            removes all items that are in a from b and returns b
+            a = [1, 2, 3, 4]
+            b = [3, 4, 5, 6]
+            c = remove_duplicates(a, b)
+            c = [5, 6]
+            """
+            # raise an error if the given items aren't lists
+            if not isinstance(a, list) and not isinstance(b, list):
+                raise TypeError("a and b must be lists")
+
+            # iterate over a, check if that item is in b, if it is, remove it from b
+            for item in a:
+                if item in b:
+                    b.remove(item)
+
+            return b
+
+        # open the file
+        with open("./saves/" + filename) as file_:
+            # load the data from the yaml file
+            yaml_data = load_yaml(file_.read())
+
+            # raise an error if the save doesn't have something we need
+            assert \
+                "player1" and "player2" and "puck" and "fullscreen" and "show_fps" and "options" in yaml_data.keys(), \
+                "Error importing the save, key datapoint missing"
+
+            player1, player2 = yaml_data["player1"], yaml_data["player2"]
+            puck = yaml_data["puck"]
+
+            # load the options
+            self.window.set_fullscreen(yaml_data["fullscreen"])
+            self.toggle_show_fps(yaml_data["show_fps"])
+            self.options = yaml_data["options"]
+
+            # load the player1 object
+            self.player1.pos = player1["pos"]
+            self.player1.color = player1["color"]
+            self.player1.score = player1["score"]
+
+            # load the player2 object
+            self.player2.pos = player2["pos"]
+            self.player2.color = player2["color"]
+            self.player2.score = player2["score"]
+
+            # load the puck object
+            self.puck.pos = puck["pos"]
+            self.puck.vel = puck["vel"]
+            self.puck.color = puck["color"]
+        # set the current save, unpause
+        self.current_save = filename
+        self.unpause_game()
+
     def build_load_menus(self):
         """
         builds the load menu pages procedurally
@@ -782,34 +818,3 @@ class Game:
         # so we commit the remaining page 
         if not EVEN_PAGES:
             commit_page(page, page_number)
-
-    def delete_save(self, filename):
-        """
-        deletes the save
-        """
-        # delete the save file
-        rm("./saves/" + filename)
-        # if we don't have any saves, go back 
-        if len(listdir("./saves"))== 0:
-            self.go_back()
-            print("No saves")
-        # if we clear a page, go to the previous page
-        elif len(listdir("./saves")) % 5 == 0:
-            self.build_load_menus()
-            self.goto_load_menu_page(self.current_page - 1)
-        # otherwise, refresh the menu
-        else:
-            self.build_load_menus()
-
-
-
-    def goto_load_menu_page(self, page_number):
-        """
-        goes to the page number `page_number`
-        """
-        # if the page number is -1, go back
-        if page_number == -1: self.go_back()
-        # if the page number is not in the pages dictionary, raise an error
-        if not page_number in self.load_menu_pages.keys(): raise ValueError("page_number incorrect")
-        # set the current page to the new one
-        self.current_page = page_number
