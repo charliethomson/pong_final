@@ -1,16 +1,13 @@
-<!DOCTYPE html>
+# Pong
 
-<html>
-	<h1> Pong </h1>
-	<p>This is a pong game made using pyglet and the python standard library. Every file in this repo was written either by me or by the program itself (saves). I'm currently reformatting the entire thing (26 Oct), because the code is <strong>GOD AWFUL</strong>. Loading was the most pointlessly difficult thing to do, but I got it to work so we coo. </p>
-	<p>I may rewrite this later but if I can do the reformatting well enough that I'm happy w/ it I won't; I haven't quite decided one way or the other yet</p>
-	
-	<p><em>(python 3.6+)</em></p>
+This is a pong game made using pyglet and the python standard library. Every file in this repo was written either by me or by the program itself (saves). I'm currently reformatting the entire thing (26 Oct), because the code is **GOD AWFUL**. Loading was the most pointlessly difficult thing to do, but I got it to work so we coo.
 
-	<h2>To run:</h2>
-	<ul>
-		<li>pip install -r requirements.txt</li>
-		<li>python main.py</li>
-		<li><a href="https://www.twitter.com/hashtag/ezpz">#ezpz</a></li>
-	</ul>
-</html>
+I may rewrite this later but if I can do the reformatting well enough that I'm happy w/ it I won't; I haven't quite decided one way or the other yet
+
+_(python 3.6+)_
+
+## To run:
+
+*   pip install -r requirements.txt
+*   python main.py
+*   [#ezpz](https://www.twitter.com/hashtag/ezpz)
