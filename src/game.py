@@ -186,6 +186,11 @@ class Game:
         self._init_temp_options()
         self.full_reset()
 
+        from os import mkdir
+        from os.path import exists
+        if not exists("./saves"):
+            mkdir("./saves")
+
     def start_game(self):
         """
         starts the game
